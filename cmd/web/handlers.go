@@ -3,10 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
-
 	"net/http"
 	"strconv"
-	"text/template"
 
 	"snippetbox.amirhoseinghf.ir/internal/models"
 )
@@ -24,26 +22,10 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, snippet := range snippets {
-		fmt.Fprintf(w, "%v\n", snippet)
-	}
+	app.render(w, http.StatusOK, "home.htm", &templateData{
+		Snippets: snippets,
+	})
 
-	files := []string{
-		"./ui/html/partials/nav.htm",
-		"./ui/html/base.htm",
-		"./ui/html/pages/home.htm",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = ts.ExecuteTemplate(w, "base", nil)
-	if err != nil {
-		app.serverError(w, err)
-	}
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -62,9 +44,12 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		} else {
 			app.serverError(w, err)
 		}
+		return
 	}
 
-	fmt.Fprintf(w, "%v", snippet)
+	app.render(w, http.StatusOK, "view.htm", &templateData{
+		Snippet: snippet,
+	})
 
 }
 
